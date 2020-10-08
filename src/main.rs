@@ -1,45 +1,47 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
+extern crate diesel;
 
-use serde::{Serialize, Deserialize};
 use rocket_contrib::json::Json;
-use rocket::State;
-use std::sync::Mutex;
+use diesel::prelude::*;
 
-struct Database {
-	items: Mutex<Vec<Application>>
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Application {
-	id: String,
-	name: String
-}
+use rust_rest_api::*;
+use rust_rest_api::models::*;
+use rust_rest_api::schema::applications::dsl::*;
 
 #[post("/api/applications", data = "<input>")]
-fn create(input: Json<Application>, db: State<Database>) -> Json<Application> {
-	let mut items = db.items.lock().expect("lock shared data");
-	let application: Application = input.into_inner();
-    items.push(application.clone());
+fn create(input: Json<NewApplication>) -> Json<Application> {
+    use schema::applications;
+
+    let connection = establish_connection();
+    let application = diesel::insert_into(applications::table)
+        .values(input.into_inner())
+        .get_result(&connection)
+        .expect("Error saving new post");
     Json(application)
 }
 
-#[delete("/api/applications/<id>")]
-fn delete(id: String, db: State<Database>) {
-	let mut items = db.items.lock().expect("lock shared data");
-    items.retain(|i| i.id != id);
+#[delete("/api/applications/<_id>")]
+fn delete(_id: i32) {
+    let connection = establish_connection();
+    diesel::delete(applications.filter(id.eq(_id)))
+        .execute(&connection)
+        .expect("Error deleting application");
 }
 
 #[get("/api/applications")]
-fn read_all(db: State<Database>) -> Json<Vec<Application>> {
-	let items = db.items.lock().expect("lock shared data");
-    Json(items.to_vec())
+fn read_all() -> Json<Vec<Application>> {
+    let connection = establish_connection();
+    let results = applications
+        .load::<Application>(&connection)
+        .expect("Error getting applications");
+    Json(results)
 }
 
 fn main() {
     rocket::ignite()
-    	.manage(Database { items: Mutex::new(Vec::new()) })
     	.mount("/", 
     		routes![
     			create,

@@ -1,0 +1,4 @@
+CREATE TABLE applications (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR NOT NULL
+)

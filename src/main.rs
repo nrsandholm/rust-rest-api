@@ -23,6 +23,16 @@ fn create(input: Json<NewApplication>) -> Json<Application> {
     Json(application)
 }
 
+#[put("/api/applications/<_id>/name", data = "<input>")]
+fn update_name(_id: i32, input: String) -> Json<Application> {
+    let connection = establish_connection();
+    let application = diesel::update(applications.filter(id.eq(_id)))
+        .set(name.eq(input))
+        .get_result(&connection)
+        .expect("Error saving new post");
+    Json(application)
+}
+
 #[delete("/api/applications/<_id>")]
 fn delete(_id: i32) {
     let connection = establish_connection();
@@ -40,14 +50,25 @@ fn read_all() -> Json<Vec<Application>> {
     Json(results)
 }
 
+#[get("/api/applications/<_id>")]
+fn read_one(_id: i32) -> Json<Application> {
+    let connection = establish_connection();
+    let result = applications.filter(id.eq(_id))
+        .get_result(&connection)
+        .expect("Error getting application");
+    Json(result)
+}
+
 fn main() {
     rocket::ignite()
-    	.mount("/", 
-    		routes![
-    			create,
-    			read_all,
-    			delete
-    		]
-    	)
-    	.launch();
+        .mount("/",
+            routes![
+                create,
+                read_all,
+                read_one,
+                update_name,
+                delete
+            ]
+        )
+        .launch();
 }

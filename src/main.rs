@@ -16,7 +16,7 @@ use rust_rest_api::models::*;
 struct Connection(diesel::PgConnection);
 
 #[post("/api/applications", data = "<input>")]
-fn create(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
+fn create_application(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
     use schema::applications;
 
     let application = diesel::insert_into(applications::table)
@@ -26,28 +26,28 @@ fn create(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
     Json(application)
 }
 
-#[put("/api/applications/<_id>/name", data = "<input>")]
-fn update_name(conn: Connection, _id: i32, input: String) -> Json<Application> {
+#[put("/api/applications/<a_id>/name", data = "<input>")]
+fn update_application_name(conn: Connection, a_id: i32, input: String) -> Json<Application> {
     use schema::applications::dsl::*;
 
-    let application = diesel::update(applications.filter(id.eq(_id)))
+    let application = diesel::update(applications.filter(id.eq(a_id)))
         .set(name.eq(input))
         .get_result(&*conn)
         .expect("Error saving new post");
     Json(application)
 }
 
-#[delete("/api/applications/<_id>")]
-fn delete(conn: Connection, _id: i32) {
+#[delete("/api/applications/<a_id>")]
+fn delete_application(conn: Connection, a_id: i32) {
     use schema::applications::dsl::*;
 
-    diesel::delete(applications.filter(id.eq(_id)))
+    diesel::delete(applications.filter(id.eq(a_id)))
         .execute(&*conn)
         .expect("Error deleting application");
 }
 
 #[get("/api/applications")]
-fn read_all(conn: Connection) -> Json<Vec<Application>> {
+fn read_applications(conn: Connection) -> Json<Vec<Application>> {
     use schema::applications::dsl::*;
 
     let results = applications
@@ -56,11 +56,11 @@ fn read_all(conn: Connection) -> Json<Vec<Application>> {
     Json(results)
 }
 
-#[get("/api/applications/<_id>")]
-fn read_one(conn: Connection, _id: i32) -> Json<Application> {
+#[get("/api/applications/<a_id>")]
+fn read_application(conn: Connection, a_id: i32) -> Json<Application> {
     use schema::applications::dsl::*;
 
-    let result = applications.filter(id.eq(_id))
+    let result = applications.filter(id.eq(a_id))
         .get_result(&*conn)
         .expect("Error getting application");
     Json(result)
@@ -92,11 +92,11 @@ fn main() {
         .attach(Connection::fairing())
         .mount("/",
             routes![
-                create,
-                read_all,
-                read_one,
-                update_name,
-                delete,
+                create_application,
+                read_applications,
+                read_application,
+                update_application_name,
+                delete_application,
                 create_file,
                 read_files
             ]

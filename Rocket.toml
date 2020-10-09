@@ -1,0 +1,4 @@
+# https://rocket.rs/v0.4/guide/configuration/
+
+[global.databases]
+rust_rest_api = { url = "postgres://postgres:password@localhost:5432/rust-rest-api" }

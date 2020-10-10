@@ -66,6 +66,21 @@ fn read_application(conn: Connection, a_id: i32) -> Json<Application> {
     Json(result)
 }
 
+#[get("/api/applications/<a_id>?relations=true")]
+fn read_application_with_relations(conn: Connection, a_id: i32) -> Json<ApplicationWithRelations> {
+    use schema::applications::dsl::*;
+
+    let application: Application = applications
+        .filter(id.eq(a_id))
+        .first(&*conn)
+        .expect("Error getting application");
+    let files: Vec<File> = File::belonging_to(&application)
+        .load::<File>(&*conn)
+        .expect("Error getting files");
+
+    Json(to_application_with_relations(application, files))
+}
+
 #[post("/api/applications/<_a_id>/files", data = "<input>")]
 fn create_file(conn: Connection, _a_id: i32, input: Json<NewFile>) -> Json<File> {
     use schema::files;
@@ -95,6 +110,7 @@ fn main() {
                 create_application,
                 read_applications,
                 read_application,
+                read_application_with_relations,
                 update_application_name,
                 delete_application,
                 create_file,

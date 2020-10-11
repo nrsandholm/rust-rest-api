@@ -60,6 +60,29 @@ fn read_files(conn: Connection, a_id: i32) -> Json<Vec<File>> {
     Json(files)
 }
 
+#[post("/api/applicants", data = "<input>")]
+fn create_applicant(conn: Connection, input: Json<NewApplicant>) -> Json<Applicant> {
+    let applicant = insert_applicant(&conn, input.into_inner());
+    Json(applicant)
+}
+
+#[delete("/api/applicants/<a_id>")]
+fn delete_applicant(conn: Connection, a_id: i32) {
+    delete_applicant_(&conn, a_id)
+}
+
+#[get("/api/applicants")]
+fn read_applicants(conn: Connection) -> Json<Vec<Applicant>> {
+    let applicants = read_applicants_(&conn);
+    Json(applicants)
+}
+
+#[get("/api/applicants/<a_id>")]
+fn read_applicant(conn: Connection, a_id: i32) -> Json<Applicant> {
+    let applicant = read_applicant_(&conn, a_id);
+    Json(applicant)
+}
+
 fn main() {
     rocket::ignite()
         .attach(Connection::fairing())
@@ -72,7 +95,11 @@ fn main() {
                 update_application_name,
                 delete_application,
                 create_file,
-                read_files
+                read_files,
+                create_applicant,
+                read_applicants,
+                read_applicant,
+                delete_applicant,
             ]
         )
         .launch();

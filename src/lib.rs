@@ -95,6 +95,39 @@ pub fn read_files_(conn: &PgConnection, a_id: i32) -> Vec<File> {
         .expect("Error getting files")
 }
 
+pub fn insert_applicant(conn: &PgConnection, input: NewApplicant) -> Applicant {
+    use schema::applicants;
+
+    diesel::insert_into(applicants::table)
+        .values(input)
+        .get_result(conn)
+        .expect("Error inserting applicant")
+}
+
+pub fn delete_applicant_(conn: &PgConnection, a_id: i32) {
+    use schema::applicants::dsl::*;
+
+    diesel::delete(applicants.filter(id.eq(a_id)))
+        .execute(conn)
+        .expect("Error deleting applicant");
+}
+
+pub fn read_applicants_(conn: &PgConnection) -> Vec<Applicant> {
+    use schema::applicants::dsl::*;
+
+    applicants
+        .load::<Applicant>(conn)
+        .expect("Error getting applicants")
+}
+
+pub fn read_applicant_(conn: &PgConnection, a_id: i32) -> Applicant {
+    use schema::applicants::dsl::*;
+
+    applicants.filter(id.eq(a_id))
+        .get_result(conn)
+        .expect("Error getting applicant")
+}
+
 pub fn to_application_with_relations(application: Application, files: Vec<File>) -> ApplicationWithRelations {
     ApplicationWithRelations {
         application: application,

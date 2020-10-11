@@ -7,8 +7,6 @@ use rocket_contrib::json::Json;
 use rocket_contrib::database;
 use rocket_contrib::databases::diesel;
 
-use diesel::prelude::*;
-
 use rust_rest_api::*;
 use rust_rest_api::models::*;
 
@@ -17,89 +15,49 @@ struct Connection(diesel::PgConnection);
 
 #[post("/api/applications", data = "<input>")]
 fn create_application(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
-    use schema::applications;
-
-    let application = diesel::insert_into(applications::table)
-        .values(input.into_inner())
-        .get_result(&*conn)
-        .expect("Error saving new post");
+    let application = insert_application(&conn, input.into_inner());
     Json(application)
 }
 
 #[put("/api/applications/<a_id>/name", data = "<input>")]
 fn update_application_name(conn: Connection, a_id: i32, input: String) -> Json<Application> {
-    use schema::applications::dsl::*;
-
-    let application = diesel::update(applications.filter(id.eq(a_id)))
-        .set(name.eq(input))
-        .get_result(&*conn)
-        .expect("Error saving new post");
+    let application = update_application_name_(&conn, a_id, input);
     Json(application)
 }
 
 #[delete("/api/applications/<a_id>")]
 fn delete_application(conn: Connection, a_id: i32) {
-    use schema::applications::dsl::*;
-
-    diesel::delete(applications.filter(id.eq(a_id)))
-        .execute(&*conn)
-        .expect("Error deleting application");
+    delete_application_(&conn, a_id)
 }
 
 #[get("/api/applications")]
 fn read_applications(conn: Connection) -> Json<Vec<Application>> {
-    use schema::applications::dsl::*;
-
-    let results = applications
-        .load::<Application>(&*conn)
-        .expect("Error getting applications");
-    Json(results)
+    let applications = read_applications_(&conn);
+    Json(applications)
 }
 
 #[get("/api/applications/<a_id>")]
 fn read_application(conn: Connection, a_id: i32) -> Json<Application> {
-    use schema::applications::dsl::*;
-
-    let result = applications.filter(id.eq(a_id))
-        .get_result(&*conn)
-        .expect("Error getting application");
-    Json(result)
+    let application = read_application_(&conn, a_id);
+    Json(application)
 }
 
 #[get("/api/applications/<a_id>?relations=true")]
 fn read_application_with_relations(conn: Connection, a_id: i32) -> Json<ApplicationWithRelations> {
-    use schema::applications::dsl::*;
-
-    let application: Application = applications
-        .filter(id.eq(a_id))
-        .first(&*conn)
-        .expect("Error getting application");
-    let files: Vec<File> = File::belonging_to(&application)
-        .load::<File>(&*conn)
-        .expect("Error getting files");
-
-    Json(to_application_with_relations(application, files))
+    let application = read_application_with_relations_(&conn, a_id);
+    Json(application)
 }
 
-#[post("/api/applications/<_a_id>/files", data = "<input>")]
-fn create_file(conn: Connection, _a_id: i32, input: Json<NewFile>) -> Json<File> {
-    use schema::files;
-
-    let file = diesel::insert_into(files::table)
-        .values(input.into_inner())
-        .get_result(&*conn)
-        .expect("Error saving new post");
+#[post("/api/applications/<a_id>/files", data = "<input>")]
+fn create_file(conn: Connection, a_id: i32, input: Json<NewFile>) -> Json<File> {
+    let file = insert_file(&conn, a_id, input.into_inner());
     Json(file)
 }
 
 #[get("/api/applications/<a_id>/files")]
 fn read_files(conn: Connection, a_id: i32) -> Json<Vec<File>> {
-    use schema::files::dsl::*;
-
-    let results = files.filter(application_id.eq(a_id))
-        .get_results(&*conn)
-        .expect("Error getting files");
-    Json(results)
+    let files = read_files_(&conn, a_id);
+    Json(files)
 }
 
 fn main() {

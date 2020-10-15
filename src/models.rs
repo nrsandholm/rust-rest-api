@@ -41,10 +41,10 @@ pub struct Applicant {
 
 #[derive(Insertable, Serialize, Deserialize)]
 #[table_name="applicants"]
-pub struct NewApplicant {
-    pub first_name: String,
-	pub lastname: String,
-	pub email: String
+pub struct NewApplicant<'a> {
+    pub first_name: &'a str,
+	pub lastname: &'a str,
+	pub email: &'a str
 }
 
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]

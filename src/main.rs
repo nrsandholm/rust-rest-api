@@ -17,7 +17,16 @@ struct Connection(diesel::PgConnection);
 fn create_application(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
     let application = insert_application(&conn, input.into_inner());
 
-    // TODO: Randomly create applicant or use old
+    let applicant = insert_applicant(&conn, NewApplicant {
+        first_name: "John",
+        lastname: "Smith",
+        email: "john.smith@mailinator.com"
+    });
+
+    insert_application_applicant(&conn, NewApplicationsApplicant {
+        application_id: application.id,
+        applicant_id: applicant.id
+    });
 
     Json(application)
 }

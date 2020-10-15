@@ -72,9 +72,15 @@ fn read_files(conn: Connection, id: i32) -> Json<Vec<File>> {
     Json(files)
 }
 
-#[post("/api/applicants", data = "<input>")]
-fn create_applicant(conn: Connection, input: Json<NewApplicant>) -> Json<Applicant> {
+#[post("/api/applications/<id>/applicants", data = "<input>")]
+fn create_applicant(conn: Connection, id: i32, input: Json<NewApplicant>) -> Json<Applicant> {
     let applicant = insert_applicant(&conn, input.into_inner());
+
+    insert_application_applicant(&conn, NewApplicationsApplicant {
+        application_id: id,
+        applicant_id: applicant.id
+    });
+
     Json(applicant)
 }
 

@@ -47,7 +47,9 @@ pub struct NewApplicant<'a> {
 	pub email: &'a str
 }
 
-#[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]
+#[derive(Debug, Queryable, Serialize, Deserialize, Identifiable, Associations)]
+#[belongs_to(Application)]
+#[belongs_to(Applicant)]
 pub struct ApplicationsApplicant {
 	pub id: i32,
 	pub application_id: i32,
@@ -65,7 +67,14 @@ pub struct NewApplicationsApplicant {
 pub struct ApplicationWithRelations {
 	#[serde(flatten)]
 	pub application: Application,
+	pub applicants: Vec<ApplicantWithRelations>,
 	pub files: Vec<FileWithRelations>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ApplicantWithRelations {
+	#[serde(flatten)]
+	pub applicant: Applicant
 }
 
 #[derive(Serialize, Deserialize)]

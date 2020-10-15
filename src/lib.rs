@@ -74,8 +74,10 @@ pub fn read_application_with_relations_(conn: &PgConnection, a_id: i32) -> Appli
     let files: Vec<File> = File::belonging_to(&application)
         .load::<File>(conn)
         .expect("Error getting files");
+    let applicant_ids = read_application_applicant_by_application(conn, &application);
+    let applicants = read_applicants(conn, &applicant_ids);
 
-    to_application_with_relations(application, files)
+    to_application_with_relations(application, applicants, files)
 }
 
 pub fn insert_file(conn: &PgConnection, _a_id: i32, input: NewFile) -> File {
@@ -128,6 +130,15 @@ pub fn read_applicant_(conn: &PgConnection, a_id: i32) -> Applicant {
         .expect("Error getting applicant")
 }
 
+fn read_applicants(conn: &PgConnection, applicant_ids: &Vec<i32>) -> Vec<Applicant> {
+    use diesel::pg::expression::dsl::any;
+    use schema::applicants::dsl::*;
+
+    applicants.filter(id.eq(any(applicant_ids)))
+        .load::<Applicant>(conn)
+        .expect("Error getting applicants")
+}
+
 pub fn insert_application_applicant(conn: &PgConnection, input: NewApplicationsApplicant) -> ApplicationsApplicant {
     use schema::applications_applicants;
 
@@ -145,11 +156,32 @@ pub fn delete_application_applicant_(conn: &PgConnection, a_id: i32) {
         .expect("Error deleting applications applicant");
 }
 
-pub fn to_application_with_relations(application: Application, files: Vec<File>) -> ApplicationWithRelations {
+fn read_application_applicant_by_application(conn: &PgConnection, application: &Application) -> Vec<i32> {
+    use schema::applications_applicants;
+
+    ApplicationsApplicant::belonging_to(application)
+        .select(applications_applicants::applicant_id)
+        .load::<i32>(conn)
+        .expect("Error getting applications applicants")
+}
+
+pub fn to_application_with_relations(
+        application: Application,
+        applicants: Vec<Applicant>,
+        files: Vec<File>
+    ) -> ApplicationWithRelations {
     ApplicationWithRelations {
         application: application,
+        applicants: to_applicants_with_relations(applicants),
         files: to_files_with_relations(files)
     }
+}
+
+pub fn to_applicants_with_relations(applicants: Vec<Applicant>) -> Vec<ApplicantWithRelations> {
+    applicants
+        .into_iter()
+        .map(|applicant| ApplicantWithRelations { applicant })
+        .collect::<Vec<_>>()
 }
 
 pub fn to_files_with_relations(files: Vec<File>) -> Vec<FileWithRelations> {

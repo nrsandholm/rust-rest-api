@@ -17,6 +17,7 @@ struct Connection(diesel::PgConnection);
 fn create_application(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
     let application = insert_application(&conn, input.into_inner());
 
+    // TODO: Get applicant from auth token
     let applicant = insert_applicant(&conn, NewApplicant {
         first_name: "John",
         lastname: "Smith",
@@ -39,6 +40,8 @@ fn update_application_name(conn: Connection, id: i32, input: String) -> Json<App
 
 #[delete("/api/applications/<id>")]
 fn delete_application(conn: Connection, id: i32) {
+    // TODO: Remove from applications_applicants
+    // TODO: Remove files
     rust_rest_api::delete_application(&conn, id)
 }
 
@@ -72,6 +75,11 @@ fn read_files(conn: Connection, id: i32) -> Json<Vec<File>> {
     Json(files)
 }
 
+#[delete("/api/applications/<_id>/files")]
+fn delete_file(_conn: Connection, _id: i32) {
+    // TODO: Implement
+}
+
 #[post("/api/applications/<id>/applicants", data = "<input>")]
 fn create_applicant(conn: Connection, id: i32, input: Json<NewApplicant>) -> Json<Applicant> {
     let applicant = insert_applicant(&conn, input.into_inner());
@@ -86,6 +94,7 @@ fn create_applicant(conn: Connection, id: i32, input: Json<NewApplicant>) -> Jso
 
 #[delete("/api/applicants/<id>")]
 fn delete_applicant(conn: Connection, id: i32) {
+    // TODO: Remove from applications_applicants
     rust_rest_api::delete_applicant(&conn, id)
 }
 
@@ -101,6 +110,14 @@ fn read_applicant(conn: Connection, id: i32) -> Json<Applicant> {
     Json(applicant)
 }
 
+// TODO: Implement auth (all endpoints restricted)
+// TODO: Implement enpoint access rights
+// TODO: Implement object access rights
+// TODO: Implement multi-tenacy (segregate data)
+// TODO: Implement API tests
+// TODO: Implement update(s) via diesel ChangeSet
+// TODO: Implement file creation by upload
+// TODO: Implement download from upload
 fn main() {
     rocket::ignite()
         .attach(Connection::fairing())
@@ -114,6 +131,7 @@ fn main() {
                 delete_application,
                 create_file,
                 read_files,
+                delete_file,
                 create_applicant,
                 read_applicants,
                 read_applicant,

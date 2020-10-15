@@ -31,44 +31,44 @@ fn create_application(conn: Connection, input: Json<NewApplication>) -> Json<App
     Json(application)
 }
 
-#[put("/api/applications/<a_id>/name", data = "<input>")]
-fn update_application_name(conn: Connection, a_id: i32, input: String) -> Json<Application> {
-    let application = update_application_name_(&conn, a_id, input);
+#[put("/api/applications/<id>/name", data = "<input>")]
+fn update_application_name(conn: Connection, id: i32, input: String) -> Json<Application> {
+    let application = rust_rest_api::update_application_name(&conn, id, input);
     Json(application)
 }
 
-#[delete("/api/applications/<a_id>")]
-fn delete_application(conn: Connection, a_id: i32) {
-    delete_application_(&conn, a_id)
+#[delete("/api/applications/<id>")]
+fn delete_application(conn: Connection, id: i32) {
+    rust_rest_api::delete_application(&conn, id)
 }
 
 #[get("/api/applications")]
 fn read_applications(conn: Connection) -> Json<Vec<Application>> {
-    let applications = read_applications_(&conn);
+    let applications = rust_rest_api::read_applications(&conn);
     Json(applications)
 }
 
-#[get("/api/applications/<a_id>")]
-fn read_application(conn: Connection, a_id: i32) -> Json<Application> {
-    let application = read_application_(&conn, a_id);
+#[get("/api/applications/<id>")]
+fn read_application(conn: Connection, id: i32) -> Json<Application> {
+    let application = rust_rest_api::read_application(&conn, id);
     Json(application)
 }
 
-#[get("/api/applications/<a_id>?relations=true")]
-fn read_application_with_relations(conn: Connection, a_id: i32) -> Json<ApplicationWithRelations> {
-    let application = read_application_with_relations_(&conn, a_id);
+#[get("/api/applications/<id>?relations=true")]
+fn read_application_with_relations(conn: Connection, id: i32) -> Json<ApplicationWithRelations> {
+    let application = rust_rest_api::read_application_with_relations(&conn, id);
     Json(application)
 }
 
-#[post("/api/applications/<a_id>/files", data = "<input>")]
-fn create_file(conn: Connection, a_id: i32, input: Json<NewFile>) -> Json<File> {
-    let file = insert_file(&conn, a_id, input.into_inner());
+#[post("/api/applications/<id>/files", data = "<input>")]
+fn create_file(conn: Connection, id: i32, input: Json<NewFile>) -> Json<File> {
+    let file = insert_file(&conn, id, input.into_inner());
     Json(file)
 }
 
-#[get("/api/applications/<a_id>/files")]
-fn read_files(conn: Connection, a_id: i32) -> Json<Vec<File>> {
-    let files = read_files_(&conn, a_id);
+#[get("/api/applications/<id>/files")]
+fn read_files(conn: Connection, id: i32) -> Json<Vec<File>> {
+    let files = rust_rest_api::read_files(&conn, id);
     Json(files)
 }
 
@@ -78,20 +78,20 @@ fn create_applicant(conn: Connection, input: Json<NewApplicant>) -> Json<Applica
     Json(applicant)
 }
 
-#[delete("/api/applicants/<a_id>")]
-fn delete_applicant(conn: Connection, a_id: i32) {
-    delete_applicant_(&conn, a_id)
+#[delete("/api/applicants/<id>")]
+fn delete_applicant(conn: Connection, id: i32) {
+    rust_rest_api::delete_applicant(&conn, id)
 }
 
 #[get("/api/applicants")]
 fn read_applicants(conn: Connection) -> Json<Vec<Applicant>> {
-    let applicants = read_applicants_(&conn);
+    let applicants = rust_rest_api::read_applicants(&conn);
     Json(applicants)
 }
 
-#[get("/api/applicants/<a_id>")]
-fn read_applicant(conn: Connection, a_id: i32) -> Json<Applicant> {
-    let applicant = read_applicant_(&conn, a_id);
+#[get("/api/applicants/<id>")]
+fn read_applicant(conn: Connection, id: i32) -> Json<Applicant> {
+    let applicant = rust_rest_api::read_applicant(&conn, id);
     Json(applicant)
 }
 

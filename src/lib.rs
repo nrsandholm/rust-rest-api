@@ -28,19 +28,19 @@ pub fn insert_application(conn: &PgConnection, input: NewApplication) -> Applica
     diesel::insert_into(applications::table)
         .values(input)
         .get_result(conn)
-        .expect("Error saving new post")
+        .expect("Error inserting application")
 }
 
-pub fn update_application_name_(conn: &PgConnection, a_id: i32, input: String) -> Application {
+pub fn update_application_name(conn: &PgConnection, a_id: i32, input: String) -> Application {
     use schema::applications::dsl::*;
 
     diesel::update(applications.filter(id.eq(a_id)))
         .set(name.eq(input))
         .get_result(conn)
-        .expect("Error saving new post")
+        .expect("Error updating application name")
 }
 
-pub fn delete_application_(conn: &PgConnection, a_id: i32) {
+pub fn delete_application(conn: &PgConnection, a_id: i32) {
     use schema::applications::dsl::*;
 
     diesel::delete(applications.filter(id.eq(a_id)))
@@ -48,7 +48,7 @@ pub fn delete_application_(conn: &PgConnection, a_id: i32) {
         .expect("Error deleting application");
 }
 
-pub fn read_applications_(conn: &PgConnection) -> Vec<Application> {
+pub fn read_applications(conn: &PgConnection) -> Vec<Application> {
     use schema::applications::dsl::*;
 
     applications
@@ -56,7 +56,7 @@ pub fn read_applications_(conn: &PgConnection) -> Vec<Application> {
         .expect("Error getting applications")
 }
 
-pub fn read_application_(conn: &PgConnection, a_id: i32) -> Application {
+pub fn read_application(conn: &PgConnection, a_id: i32) -> Application {
     use schema::applications::dsl::*;
 
     applications.filter(id.eq(a_id))
@@ -64,7 +64,7 @@ pub fn read_application_(conn: &PgConnection, a_id: i32) -> Application {
         .expect("Error getting application")
 }
 
-pub fn read_application_with_relations_(conn: &PgConnection, a_id: i32) -> ApplicationWithRelations {
+pub fn read_application_with_relations(conn: &PgConnection, a_id: i32) -> ApplicationWithRelations {
     use schema::applications::dsl::*;
 
     let application: Application = applications
@@ -75,7 +75,7 @@ pub fn read_application_with_relations_(conn: &PgConnection, a_id: i32) -> Appli
         .load::<File>(conn)
         .expect("Error getting files");
     let applicant_ids = read_application_applicant_by_application(conn, &application);
-    let applicants = read_applicants(conn, &applicant_ids);
+    let applicants = read_applicants_by_ids(conn, &applicant_ids);
 
     to_application_with_relations(application, applicants, files)
 }
@@ -86,10 +86,10 @@ pub fn insert_file(conn: &PgConnection, _a_id: i32, input: NewFile) -> File {
     diesel::insert_into(files::table)
         .values(input)
         .get_result(conn)
-        .expect("Error saving new post")
+        .expect("Error inserting file")
 }
 
-pub fn read_files_(conn: &PgConnection, a_id: i32) -> Vec<File> {
+pub fn read_files(conn: &PgConnection, a_id: i32) -> Vec<File> {
     use schema::files::dsl::*;
 
     files.filter(application_id.eq(a_id))
@@ -106,7 +106,7 @@ pub fn insert_applicant(conn: &PgConnection, input: NewApplicant) -> Applicant {
         .expect("Error inserting applicant")
 }
 
-pub fn delete_applicant_(conn: &PgConnection, a_id: i32) {
+pub fn delete_applicant(conn: &PgConnection, a_id: i32) {
     use schema::applicants::dsl::*;
 
     diesel::delete(applicants.filter(id.eq(a_id)))
@@ -114,7 +114,7 @@ pub fn delete_applicant_(conn: &PgConnection, a_id: i32) {
         .expect("Error deleting applicant");
 }
 
-pub fn read_applicants_(conn: &PgConnection) -> Vec<Applicant> {
+pub fn read_applicants(conn: &PgConnection) -> Vec<Applicant> {
     use schema::applicants::dsl::*;
 
     applicants
@@ -122,7 +122,7 @@ pub fn read_applicants_(conn: &PgConnection) -> Vec<Applicant> {
         .expect("Error getting applicants")
 }
 
-pub fn read_applicant_(conn: &PgConnection, a_id: i32) -> Applicant {
+pub fn read_applicant(conn: &PgConnection, a_id: i32) -> Applicant {
     use schema::applicants::dsl::*;
 
     applicants.filter(id.eq(a_id))
@@ -130,7 +130,7 @@ pub fn read_applicant_(conn: &PgConnection, a_id: i32) -> Applicant {
         .expect("Error getting applicant")
 }
 
-fn read_applicants(conn: &PgConnection, applicant_ids: &Vec<i32>) -> Vec<Applicant> {
+fn read_applicants_by_ids(conn: &PgConnection, applicant_ids: &Vec<i32>) -> Vec<Applicant> {
     use diesel::pg::expression::dsl::any;
     use schema::applicants::dsl::*;
 
@@ -148,7 +148,7 @@ pub fn insert_application_applicant(conn: &PgConnection, input: NewApplicationsA
         .expect("Error inserting applications applicant")
 }
 
-pub fn delete_application_applicant_(conn: &PgConnection, a_id: i32) {
+pub fn delete_application_applicant(conn: &PgConnection, a_id: i32) {
     use schema::applications_applicants::dsl::*;
 
     diesel::delete(applications_applicants.filter(id.eq(a_id)))

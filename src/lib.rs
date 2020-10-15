@@ -128,6 +128,23 @@ pub fn read_applicant_(conn: &PgConnection, a_id: i32) -> Applicant {
         .expect("Error getting applicant")
 }
 
+pub fn insert_application_applicant(conn: &PgConnection, input: NewApplicationsApplicant) -> ApplicationsApplicant {
+    use schema::applications_applicants;
+
+    diesel::insert_into(applications_applicants::table)
+        .values(input)
+        .get_result(conn)
+        .expect("Error inserting applications applicant")
+}
+
+pub fn delete_application_applicant_(conn: &PgConnection, a_id: i32) {
+    use schema::applications_applicants::dsl::*;
+
+    diesel::delete(applications_applicants.filter(id.eq(a_id)))
+        .execute(conn)
+        .expect("Error deleting applications applicant");
+}
+
 pub fn to_application_with_relations(application: Application, files: Vec<File>) -> ApplicationWithRelations {
     ApplicationWithRelations {
         application: application,

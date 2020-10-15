@@ -2,6 +2,7 @@ use serde::{Serialize, Deserialize};
 use super::schema::applications;
 use super::schema::files;
 use super::schema::applicants;
+use super::schema::applications_applicants;
 
 #[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]
 pub struct Application {
@@ -44,6 +45,20 @@ pub struct NewApplicant {
     pub first_name: String,
 	pub lastname: String,
 	pub email: String
+}
+
+#[derive(Debug, Queryable, Serialize, Deserialize, Identifiable)]
+pub struct ApplicationsApplicant {
+	pub id: i32,
+	pub application_id: i32,
+	pub applicant_id: i32
+}
+
+#[derive(Insertable, Serialize, Deserialize)]
+#[table_name="applications_applicants"]
+pub struct NewApplicationsApplicant {
+	pub application_id: i32,
+	pub applicant_id: i32
 }
 
 #[derive(Serialize, Deserialize)]

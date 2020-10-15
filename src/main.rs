@@ -16,6 +16,9 @@ struct Connection(diesel::PgConnection);
 #[post("/api/applications", data = "<input>")]
 fn create_application(conn: Connection, input: Json<NewApplication>) -> Json<Application> {
     let application = insert_application(&conn, input.into_inner());
+
+    // TODO: Randomly create applicant or use old
+
     Json(application)
 }
 
